@@ -5,10 +5,10 @@ import shap
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import log_loss, accuracy_score, f1_score
 from scipy.cluster.hierarchy import linkage, fcluster
-from sklearn.model_selection._split import _BaseKFold, StratifiedKFold
 from sklearn.feature_selection import mutual_info_classif
+from sklearn.metrics import log_loss, accuracy_score, f1_score
+from sklearn.model_selection._split import _BaseKFold, StratifiedKFold
 
 
 def cv_score(clf, X, y, scoring: Callable = accuracy_score, cv: _BaseKFold = None, **fit_params):
@@ -106,7 +106,7 @@ def feature_importance_CFI_MDA(
         # feat importance based on OOS score reduction
         scr0, scr1 = pd.Series(), pd.DataFrame(columns=X.columns)
 
-        for i, (train, test) in enumerate(cv.split(X=X)):
+        for i, (train, test) in enumerate(cv.split(X=X, y=y)):
             X0, y0 = X.iloc[train, :], y.iloc[train]
             X1, y1 = X.iloc[test, :], y.iloc[test]
             fit = clf.fit(X=X0, y=y0)
@@ -139,12 +139,8 @@ def feature_importance_CFI_MDA(
     cluster_subsets = [[f for c, f in zip(clusters, X.columns) if c == ci] for ci in range(1, C + 1)]
 
     fit = clf.fit(X=X, y=y)
-    try:
-        oob = fit.oob_score_
-    except AttributeError as err:
-        oob = None
     imp, oos = feat_imp_MDA_clusterized(clf, X, y, cv, scoring, cluster_subsets)
-    return imp, oob, oos
+    return imp, oos
 
 
 def SHAP_importance(clf, X):
@@ -170,7 +166,7 @@ def feature_importance(X, y, cv, scoring=accuracy_score, method="SFI", clf=Rando
         imp = single_feature_importance(X.columns, clf, X, y, scoring=scoring, cv=cv)
     elif method == "CFI":
         C = 3
-        imp, oob, oos = feature_importance_CFI_MDA(X, y, clf, cv, scoring, C)
+        imp, oos = feature_importance_CFI_MDA(X, y, clf, cv, scoring, C)
     elif method == "SHAP":
         imp = SHAP_importance(clf, X)
         oos = None
@@ -213,6 +209,8 @@ def compute_features(
         out.append(df0)
         out_csv = pd.DataFrame(out)
         out_csv.to_csv("stats.csv")
+    out_csv["method"] = methods
+    out_csv.set_index("method")
     return out_csv, importances
 
 
