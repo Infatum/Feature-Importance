@@ -180,7 +180,7 @@ def feature_importance(X, y, cv, scoring=accuracy_score, method="SFI", clf=Rando
     return imp, oos
 
 
-def compute_features(
+def compute_feature_importance(
     X: pd.DataFrame,
     y: pd.Series,
     cv: _BaseKFold,
