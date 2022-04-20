@@ -16,8 +16,8 @@ Feature importance techniques for classification:
 
 * Create virtual evironment: `python3 -m venv venv`
 
-* Install packages: `pip install -r requirements.txt`
-
 * Activate environment: `. venv/bin/activate`
+
+* Install packages: `pip install -r requirements.txt`
 
 * Start Jupyter Notebook: `python3 -m jupyter notebook`
